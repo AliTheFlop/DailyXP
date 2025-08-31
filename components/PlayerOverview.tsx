@@ -3,16 +3,18 @@
 import { PlayerStats } from '@/types';
 import { XPBar } from './XPBar';
 import { Trophy, Zap, Target } from 'lucide-react';
+import { getXPForCurrentLevel, getXPToNextLevel } from '@/lib/xp-system';
 
 interface PlayerOverviewProps {
   stats: PlayerStats;
 }
 
 export function PlayerOverview({ stats }: PlayerOverviewProps) {
-  const globalCurrentLevelXP = stats.totalXP % 100;
+  const globalCurrentLevelXP = getXPForCurrentLevel(stats.totalXP);
+  const globalMaxXP = globalCurrentLevelXP + getXPToNextLevel(stats.totalXP);
   const categoriesCount = Object.keys(stats.categories).length;
-  const avgCategoryLevel = categoriesCount > 0 
-    ? Object.values(stats.categories).reduce((sum, cat) => sum + cat.level, 0) / categoriesCount 
+  const avgCategoryLevel = categoriesCount > 0
+    ? Object.values(stats.categories).reduce((sum, cat) => sum + cat.level, 0) / categoriesCount
     : 0;
 
   return (
@@ -32,7 +34,7 @@ export function PlayerOverview({ stats }: PlayerOverviewProps) {
       <div className="mb-6">
         <XPBar
           currentXP={globalCurrentLevelXP}
-          maxXP={100}
+          maxXP={globalMaxXP}
           level={stats.globalLevel}
           color="#FFD700"
           size="lg"
