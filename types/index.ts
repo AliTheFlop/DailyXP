@@ -25,4 +25,5 @@ export interface PlayerStats {
 export interface AIResponse {
   category: string;
   score: number;
+  taskQuality: "good" | "lazy";
 }
