@@ -61,19 +61,20 @@ export const scoreAction = async (actionText: string): Promise<AIResponse> => {
         throw new Error("OPENAI_API_KEY is not set");
     }
 
-    const systemPrompt = `You are a ruthless but fair life coach inside a gamified productivity system. 
-   Your job is to judge the user's actions like they are logging moves in a real-life RPG. 
+    const systemPrompt = `You are a ruthless but fair life coach inside a gamified productivity system.
+    Your job is to judge the user's actions like they are logging moves in a real-life RPG.
 
-   - Categorize the task into one of: ${CATEGORIES.join(", ")}. 
-   - Score the task 0-100 (higher = more valuable to long-term growth). 
-   - Label it as "good" if it meaningfully pushes the player forward, 
-     or "lazy" if it's entertainment, procrastination, or meaningless filler. 
-   - Be strict. Do NOT inflate scores to be nice. If they did something weak, punish them. 
-   - Treat obviously lazy actions (gaming, scrolling, junk food, oversleeping, etc.) with contempt. 
-   - Treat serious work (deep focus, building, outreach, training) as heroic. 
+    - Categorize the task into one of: ${CATEGORIES.join(", ")}.
+    - Score the task 0-100 (higher = more valuable to long-term growth).
+    - Label it as "good" if it meaningfully pushes the player forward,
+      or "lazy" if it's entertainment, procrastination, or meaningless filler.
+    - Provide a short, no-nonsense feedback message.
+    - Be strict. Do NOT inflate scores to be nice. If they did something weak, punish them.
+    - Treat obviously lazy actions (gaming, scrolling, junk food, oversleeping, etc.) with contempt.
+    - Treat serious work (deep focus, building, outreach, training) as heroic.
 
-   Respond ONLY in raw JSON, no extra text. Keys: 
-   { "score": number, "category": string, "taskQuality": "good" | "lazy" }`;
+    Respond ONLY in raw JSON, no extra text. Keys:
+    { "score": number, "category": string, "taskQuality": "good" | "lazy", "feedback": string }`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -113,6 +114,7 @@ export const scoreAction = async (actionText: string): Promise<AIResponse> => {
         typeof parsed.category === "string" ? parsed.category : "General";
     const score = typeof parsed.score === "number" ? parsed.score : 50;
     const taskQuality = parsed.taskQuality === "good" ? "good" : "lazy";
+    const feedback = typeof parsed.feedback === "string" ? parsed.feedback : "";
 
-    return { category, score, taskQuality };
+    return { category, score, taskQuality, feedback };
 };

@@ -24,7 +24,9 @@ export function ActionLog({ actions }: ActionLogProps) {
         {actions.map((action) => (
           <div
             key={action.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border-l-4 border-blue-400"
+            className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg border-l-4 ${
+              action.taskQuality === 'good' ? 'border-green-400' : 'border-red-400'
+            }`}
           >
             <div className="flex-1">
               <p className="font-medium text-gray-800 mb-1">{action.text}</p>
@@ -32,11 +34,29 @@ export function ActionLog({ actions }: ActionLogProps) {
                 <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                   {action.category}
                 </span>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    action.taskQuality === 'good'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {action.taskQuality === 'good' ? 'Good' : 'Lazy'}
+                </span>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   <span>{action.timestamp.toLocaleDateString()}</span>
                 </div>
               </div>
+              {action.feedback && (
+                <p
+                  className={`mt-1 text-sm ${
+                    action.taskQuality === 'good' ? 'text-green-700' : 'text-red-700'
+                  }`}
+                >
+                  {action.feedback}
+                </p>
+              )}
             </div>
             <div className="text-right">
               <div className="flex items-center gap-1 text-yellow-600 font-bold">
