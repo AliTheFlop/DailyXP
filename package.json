@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "tsc lib/xp-system.ts --outDir build --module commonjs --target es2018 --lib es2018,dom --esModuleInterop --skipLibCheck && node --test __tests__/xp-system.test.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
