@@ -1,112 +1,112 @@
 import { AIResponse } from "@/types";
 
+// List of available categories for the AI to choose from.
+// The model must return one of these values in its response.
+const CATEGORIES: string[] = [
+  "Work",
+  "Career",
+  "Business",
+  "Coding",
+  "Design",
+  "Writing",
+  "Reading",
+  "Research",
+  "Learning",
+  "Studying",
+  "Exercise",
+  "Fitness",
+  "Running",
+  "Weightlifting",
+  "Yoga",
+  "Meditation",
+  "Health",
+  "Nutrition",
+  "Cooking",
+  "Cleaning",
+  "Chores",
+  "Maintenance",
+  "Gardening",
+  "Errands",
+  "Shopping",
+  "Finance",
+  "Investing",
+  "Budgeting",
+  "Saving",
+  "Networking",
+  "Social",
+  "Family",
+  "Friends",
+  "Volunteering",
+  "Travel",
+  "Leisure",
+  "Gaming",
+  "Entertainment",
+  "Music",
+  "Art",
+  "Creativity",
+  "Hobbies",
+  "Projects",
+  "Education",
+  "Teaching",
+  "Planning",
+  "Administration",
+  "Self-Care",
+  "Sleep",
+  "Mindfulness",
+];
+
 export const scoreAction = async (actionText: string): Promise<AIResponse> => {
-    // For MVP, we'll simulate AI scoring with some logic
-    // In production, this would call an LLM API
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not set");
+  }
 
-    // Simple category detection based on keywords
-    const categories = {
-        Work: [
-            "work",
-            "project",
-            "task",
-            "meeting",
-            "deadline",
-            "email",
-            "presentation",
-        ],
-        Health: [
-            "workout",
-            "exercise",
-            "gym",
-            "run",
-            "walk",
-            "yoga",
-            "sleep",
-            "meditation",
-        ],
-        Learning: [
-            "read",
-            "study",
-            "course",
-            "book",
-            "tutorial",
-            "research",
-            "practice",
-        ],
-        Social: [
-            "friend",
-            "family",
-            "call",
-            "visit",
-            "date",
-            "party",
-            "networking",
-        ],
-        Creative: [
-            "write",
-            "draw",
-            "design",
-            "paint",
-            "music",
-            "create",
-            "build",
-        ],
-        Finance: [
-            "budget",
-            "save",
-            "invest",
-            "pay",
-            "bill",
-            "money",
-            "expense",
-        ],
-        Personal: [
-            "clean",
-            "organize",
-            "plan",
-            "journal",
-            "reflection",
-            "goal",
-        ],
-    };
+  const systemPrompt =
+    `You are a serious life coach helping a user gain XP in life. ` +
+    `Evaluate the user's action, assign a category from the provided list, ` +
+    `score the action from 0-100 (higher is better), and judge whether it's a ` +
+    `"good" or "lazy" task. Respond strictly in JSON with keys: ` +
+    `score (number), category (string), taskQuality ("good" | "lazy"). ` +
+    `Categories: ${CATEGORIES.join(", ")}`;
 
-    let detectedCategory = "General";
-    let baseScore = 50;
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      temperature: 0.7,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: actionText },
+      ],
+    }),
+  });
 
-    const lowerText = actionText.toLowerCase();
+  if (!response.ok) {
+    throw new Error(`OpenAI API error: ${response.status}`);
+  }
 
-    // Detect category
-    for (const [category, keywords] of Object.entries(categories)) {
-        if (keywords.some((keyword) => lowerText.includes(keyword))) {
-            detectedCategory = category;
-            break;
-        }
-    }
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error("No response from AI");
+  }
 
-    // Score based on action indicators
-    if (lowerText.includes("completed") || lowerText.includes("finished")) {
-        baseScore += 20;
-    }
-    if (lowerText.includes("difficult") || lowerText.includes("challenging")) {
-        baseScore += 15;
-    }
-    if (lowerText.includes("helped") || lowerText.includes("taught")) {
-        baseScore += 10;
-    }
-    if (lowerText.includes("learned") || lowerText.includes("improved")) {
-        baseScore += 10;
-    }
+  let parsed: any;
+  try {
+    parsed = JSON.parse(content);
+  } catch (err) {
+    throw new Error("Failed to parse AI response");
+  }
 
-    // Add some randomness (±15)
-    const randomVariation = Math.floor(Math.random() * 31) - 15;
-    const finalScore = Math.max(10, Math.min(100, baseScore + randomVariation));
+  const category = typeof parsed.category === "string" ? parsed.category : "General";
+  const score = typeof parsed.score === "number" ? parsed.score : 50;
+  const taskQuality = parsed.taskQuality === "good" ? "good" : "lazy";
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    return {
-        category: detectedCategory,
-        score: finalScore,
-    };
+  return { category, score, taskQuality };
 };
+
