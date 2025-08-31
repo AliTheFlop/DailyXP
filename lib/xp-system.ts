@@ -1,12 +1,50 @@
-import { Category, PlayerStats, Action } from '@/types';
+import { Category, PlayerStats, Action } from '../types';
 
-// Total XP required to reach the start of a given level (quadratic progression)
+// XP required to reach the start of each level up to level 10.
+// These values keep early levels quick (≈3-5 tasks per level).
+const EARLY_LEVEL_THRESHOLDS: number[] = [
+  0,   // Level 1
+  30,  // Level 2
+  63,  // Level 3
+  98,  // Level 4
+  136, // Level 5
+  176, // Level 6
+  219, // Level 7
+  264, // Level 8
+  312, // Level 9
+  362, // Level 10
+];
+
+// Constant XP gained per level after level 10 (~10-15 tasks)
+const POST_10_INCREMENT = 125;
+
+// Total XP required to reach the start of a given level (piecewise progression)
 export const xpForLevel = (level: number): number => {
-  return 100 * (level - 1) * (level - 1);
+  if (level <= EARLY_LEVEL_THRESHOLDS.length) {
+    return EARLY_LEVEL_THRESHOLDS[level - 1];
+  }
+
+  const base = EARLY_LEVEL_THRESHOLDS[EARLY_LEVEL_THRESHOLDS.length - 1];
+  return base + (level - EARLY_LEVEL_THRESHOLDS.length) * POST_10_INCREMENT;
 };
 
+// Determine level from total XP using the piecewise thresholds
 export const calculateLevel = (xp: number): number => {
-  return Math.floor(Math.sqrt(xp / 100)) + 1;
+  // Handle early levels using the table
+  for (let i = EARLY_LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    const threshold = EARLY_LEVEL_THRESHOLDS[i];
+    if (xp >= threshold) {
+      if (i === EARLY_LEVEL_THRESHOLDS.length - 1) {
+        // We're in the constant-increment region
+        return (
+          EARLY_LEVEL_THRESHOLDS.length +
+          Math.floor((xp - threshold) / POST_10_INCREMENT)
+        );
+      }
+      return i + 1;
+    }
+  }
+  return 1;
 };
 
 export const getXPForCurrentLevel = (xp: number): number => {
