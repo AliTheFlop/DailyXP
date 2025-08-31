@@ -24,12 +24,14 @@ export function ActionLogger({ onActionLogged }: ActionLoggerProps) {
     try {
       const aiResponse = await scoreAction(actionText);
       const xp = Math.floor(aiResponse.score / 10);
-      
+
       const action: Action = {
         id: Date.now().toString(),
         text: actionText,
         category: aiResponse.category,
         score: aiResponse.score,
+        taskQuality: aiResponse.taskQuality,
+        feedback: aiResponse.feedback,
         xp,
         timestamp: new Date(),
       };

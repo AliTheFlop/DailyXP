@@ -3,6 +3,8 @@ export interface Action {
   text: string;
   category: string;
   score: number;
+  taskQuality: "good" | "lazy";
+  feedback: string;
   xp: number;
   timestamp: Date;
 }
@@ -26,4 +28,5 @@ export interface AIResponse {
   category: string;
   score: number;
   taskQuality: "good" | "lazy";
+  feedback: string;
 }
