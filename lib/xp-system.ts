@@ -1,15 +1,27 @@
 import { Category, PlayerStats, Action } from '@/types';
 
+// Total XP required to reach the start of a given level (quadratic progression)
+export const xpForLevel = (level: number): number => {
+  return 100 * (level - 1) * (level - 1);
+};
+
 export const calculateLevel = (xp: number): number => {
-  return Math.floor(xp / 100) + 1;
+  return Math.floor(Math.sqrt(xp / 100)) + 1;
 };
 
 export const getXPForCurrentLevel = (xp: number): number => {
-  return xp % 100;
+  const level = calculateLevel(xp);
+  return xp - xpForLevel(level);
+};
+
+// XP required to reach the next level from the provided total XP
+export const xpToNextLevel = (xp: number): number => {
+  const level = calculateLevel(xp);
+  return xpForLevel(level + 1) - xp;
 };
 
 export const getXPToNextLevel = (xp: number): number => {
-  return 100 - getXPForCurrentLevel(xp);
+  return xpToNextLevel(xp);
 };
 
 export const createCategory = (name: string, color: string): Category => ({

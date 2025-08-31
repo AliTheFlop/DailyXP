@@ -1,4 +1,5 @@
-import { PlayerStats } from '@/types';
+import { PlayerStats, Category } from '@/types';
+import { calculateLevel, getXPForCurrentLevel } from './xp-system';
 
 const STORAGE_KEY = 'xp-engine-data';
 
@@ -29,7 +30,25 @@ export const getPlayerStats = (): PlayerStats => {
       ...action,
       timestamp: new Date(action.timestamp),
     }));
-    return parsed;
+
+    // Recalculate levels using current XP formulas (migration from linear system)
+    const categories: Record<string, Category> = {};
+    Object.entries(parsed.categories || {}).forEach(([name, cat]: [string, Category]) => {
+      const totalXP = cat.totalXP || 0;
+      const level = calculateLevel(totalXP);
+      const currentLevelXP = getXPForCurrentLevel(totalXP);
+      categories[name] = { ...cat, totalXP, level, currentLevelXP };
+    });
+
+    const totalXP = Object.values(categories).reduce((sum, cat) => sum + cat.totalXP, 0);
+    const globalLevel = calculateLevel(totalXP);
+
+    return {
+      totalXP,
+      globalLevel,
+      categories,
+      recentActions: parsed.recentActions,
+    };
   } catch {
     return {
       totalXP: 0,

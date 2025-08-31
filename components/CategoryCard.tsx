@@ -3,12 +3,15 @@
 import { Category } from '@/types';
 import { XPBar } from './XPBar';
 import { Star, TrendingUp } from 'lucide-react';
+import { getXPToNextLevel } from '@/lib/xp-system';
 
 interface CategoryCardProps {
   category: Category;
 }
 
 export function CategoryCard({ category }: CategoryCardProps) {
+  const xpToNext = getXPToNextLevel(category.totalXP);
+
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       <div className="flex items-center justify-between mb-4">
@@ -28,7 +31,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <div className="mb-4">
         <XPBar
           currentXP={category.currentLevelXP}
-          maxXP={100}
+          maxXP={category.currentLevelXP + xpToNext}
           level={category.level}
           color={category.color}
           size="md"
@@ -40,7 +43,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
           <TrendingUp className="w-4 h-4" />
           <span>{category.totalXP} Total XP</span>
         </div>
-        <span>{100 - category.currentLevelXP} XP to next level</span>
+        <span>{xpToNext} XP to next level</span>
       </div>
     </div>
   );
